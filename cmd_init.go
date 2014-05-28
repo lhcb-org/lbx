@@ -25,6 +25,7 @@ ex:
 	}
 	add_output_level(cmd)
 	add_search_path(cmd)
+	add_platform(cmd)
 
 	cmd.Flag.String("name", "", "name of the local project (default: <project>Dev_<version>)")
 	return cmd
@@ -69,9 +70,13 @@ func lbx_run_cmd_init(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("lbx-init: invalid project dir")
 	}
 
+	platform := cmd.Flag.Lookup("c").Value.Get().(string)
+
 	g_ctx.Infof(">>> project=%q version=%q\n", proj, vers)
 	g_ctx.Infof("local-proj=%q\n", local_proj)
 	g_ctx.Infof("local-vers=%q\n", local_vers)
 	g_ctx.Infof("proj-dir=%q\n", projdir)
+	g_ctx.Infof("platform=%q\n", platform)
+
 	return err
 }
