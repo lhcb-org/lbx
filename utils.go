@@ -22,7 +22,7 @@ func path_exists(name string) bool {
 func handle_err(err error) {
 	if err != nil {
 		if g_ctx != nil {
-			g_ctx.msg.Errorf("%v\n", err.Error())
+			g_ctx.Errorf("%v\n", err.Error())
 		} else {
 			fmt.Fprintf(os.Stderr, "**error** %v\n", err)
 		}
@@ -31,7 +31,7 @@ func handle_err(err error) {
 }
 
 func add_search_path(cmd *commander.Command) {
-	cmd.Flag.String("user-area", "", "use the specified path as User_release_area instead of ${User_release_area}")
+	cmd.Flag.String("user-area", ".", "use the specified path as User_release_area instead of ${User_release_area}")
 }
 
 func add_output_level(cmd *commander.Command) {

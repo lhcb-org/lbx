@@ -5,11 +5,11 @@ import (
 
 	"github.com/gonuts/commander"
 	"github.com/gonuts/flag"
-	"github.com/gonuts/logger"
+	"github.com/lhcb-org/lbx/lbx"
 )
 
 var g_cmd *commander.Command
-var g_ctx *Context
+var g_ctx *lbx.Context
 
 func init() {
 	g_cmd = &commander.Command{
@@ -22,9 +22,7 @@ func init() {
 		Flag: *flag.NewFlagSet("lbx", flag.ExitOnError),
 	}
 
-	g_ctx = &Context{
-		msg: logger.New("lbx"),
-	}
+	g_ctx = lbx.NewContext("lbx")
 }
 
 func main() {
