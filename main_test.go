@@ -7,6 +7,11 @@ import (
 )
 
 func TestInit(t *testing.T) {
+
+	for _, k := range []string{"CMAKE_PREFIX_PATH", "CMTPROJECTPATH", "LHCBPROJECTPATH"} {
+		os.Setenv(k, "")
+	}
+
 	err := os.Setenv("LHCBPROJECTPATH", "testdata/projects")
 	if err != nil {
 		t.Fatalf("error setting LHCBPROJECTPATH: %v\n", err)
