@@ -8,6 +8,16 @@ import (
 	"github.com/gonuts/logger"
 )
 
+// Getenv returns the environment variable associated with key k.
+// if it doesn't exist, it returns val.
+func Getenv(k, val string) string {
+	v := os.Getenv(k)
+	if v != "" {
+		return v
+	}
+	return val
+}
+
 func path_exists(name string) bool {
 	_, err := os.Stat(name)
 	if err == nil {
