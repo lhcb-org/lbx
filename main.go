@@ -17,6 +17,7 @@ func init() {
 		Short:     "tools for development.",
 		Subcommands: []*commander.Command{
 			lbx_make_cmd_init(),
+			lbx_make_cmd_pkg(),
 			lbx_make_cmd_version(),
 		},
 		Flag: *flag.NewFlagSet("lbx", flag.ExitOnError),
