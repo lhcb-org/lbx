@@ -205,5 +205,23 @@ func lbx_run_cmd_init(cmd *commander.Command, args []string) error {
 			return err
 		}
 	}
+
+	// report success.
+	fmt.Printf(`
+Successfully create the local project [%[1]s] in [%[2]s]
+
+To start working:
+
+  > cd %[3]s
+  > lbx pkg co MyPackage vXrY
+
+then
+
+  > make
+  > make test
+  > make install
+
+You can customize the configuration by editing the file "CMakeLists.txt"
+`, dirname, usr_area, local_projdir)
 	return err
 }
