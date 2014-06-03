@@ -48,7 +48,7 @@ func lbx_run_cmd_init(cmd *commander.Command, args []string) error {
 	switch len(args) {
 	case 1:
 		proj = args[0]
-		vers = "trunk"
+		vers = "HEAD"
 	case 2:
 		proj = args[0]
 		vers = args[1]
