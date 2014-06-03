@@ -18,14 +18,15 @@ import (
 func lbx_make_cmd_init() *commander.Command {
 	cmd := &commander.Command{
 		Run:       lbx_run_cmd_init,
-		UsageLine: "init [options] <project-name> <project-version>",
+		UsageLine: "init [options] <project-name> [<project-version>]",
 		Short:     "initialize a local development project.",
 		Long: `
 init initialize a local development project.
 
 ex:
- $ lbx init Gaudi trunk
- $ lbx init -name mydev Gaudi trunk
+ $ lbx init Gaudi
+ $ lbx init Gaudi HEAD
+ $ lbx init -name mydev Gaudi
 `,
 		Flag: *flag.NewFlagSet("lbx-init", flag.ExitOnError),
 	}
