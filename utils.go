@@ -63,7 +63,7 @@ func add_platform(cmd *commander.Command) {
 
 	if plat == "" {
 		// auto-detect
-		plat = "x86_64-linux-gcc-opt"
+		plat = "x86_64-slc6-gcc48-opt"
 	}
 
 	cmd.Flag.String("c", plat, "runtime platform")
