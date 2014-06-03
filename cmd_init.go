@@ -80,6 +80,33 @@ func lbx_run_cmd_init(cmd *commander.Command, args []string) error {
 
 	platform := cmd.Flag.Lookup("c").Value.Get().(string)
 
+	if nightly := cmd.Flag.Lookup("nightly").Value.Get().(string); nightly != "" {
+		slice := strings.Split(nightly, ",")
+		slot := slice[0]
+		day := time.Now().Format("Mon")
+		if len(slice) > 1 {
+			day = slice[1]
+		}
+		nightly_bases := []string{
+			Getenv("LHCBNIGHTLIES", "/afs/cern.ch/lhcb/software/nightlies"),
+			filepath.Clean(filepath.Join(Getenv("LCG_release_area", "/afs/cern.ch/sw/lcg/app/releases"), "..", "nightlies")),
+		}
+		slot_dir := ""
+		for i := range nightly_bases {
+			dir := filepath.Join(nightly_bases[i], slot)
+			if path_exists(dir) {
+				slot_dir = dir
+				break
+			}
+		}
+		if slot_dir == "" {
+			err = fmt.Errorf("lbx-init: could not find slot %q in [%s].", slot, nightly_bases)
+			g_ctx.Errorf("%v\n", err)
+			return err
+		}
+		g_ctx.ProjectsPath = append([]string{filepath.Join(slot_dir, day)}, g_ctx.ProjectsPath...)
+	}
+
 	// prepend dev-dirs to the search path
 	devdirs := cmd.Flag.Lookup("dev-dirs").Value.Get().(string)
 	if devdirs != "" {
