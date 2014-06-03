@@ -1,7 +1,9 @@
 package lbx
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/gonuts/logger"
@@ -59,4 +61,41 @@ func defaultProjectsPath() []string {
 	}
 
 	return projpath
+}
+
+// FindProject finds a Gaudi-based project among the Context.ProjectsPath.
+func (ctx *Context) FindProject(name, version, platform string) (string, error) {
+
+	// standard project suffixes
+	suffixes := []string{
+		fmt.Sprintf("%s_%s", name, version),
+		filepath.Join(
+			strings.ToUpper(name),
+			fmt.Sprintf("%s_%s", strings.ToUpper(name), version),
+		),
+	}
+
+	// special case: with the default 'latest' version, we allow the plain name
+	if version == "latest" {
+		suffixes = append([]string{name}, suffixes...)
+	}
+
+	bindir := filepath.Join("InstallArea", platform)
+	for _, path := range ctx.ProjectsPath {
+		for _, suffix := range suffixes {
+			dir := filepath.Join(path, suffix, bindir)
+			ctx.Debugf("checking [%s]...\n", dir)
+			_, err := os.Stat(dir)
+			if err == nil {
+				ctx.Debugf("checking [%s]... [OK]\n", dir)
+				return dir, nil
+			}
+			ctx.Debugf("checking [%s]... [ERR]\n", dir)
+		}
+	}
+
+	return "", fmt.Errorf(
+		"lbx: no such project(name=%q, version=%q, platform=%q, path=%s)",
+		name, version, platform, ctx.ProjectsPath,
+	)
 }

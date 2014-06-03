@@ -28,7 +28,7 @@ func init() {
 func main() {
 	err := g_cmd.Flag.Parse(os.Args[1:])
 	if err != nil {
-
+		handle_err(err)
 	}
 
 	args := g_cmd.Flag.Args()

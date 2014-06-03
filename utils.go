@@ -32,6 +32,9 @@ func handle_err(err error) {
 
 func add_search_path(cmd *commander.Command) {
 	cmd.Flag.String("user-area", ".", "use the specified path as User_release_area instead of ${User_release_area}")
+	cmd.Flag.String("dev-dirs", "", "path-list to prepend to the projects-search path")
+
+	cmd.Flag.String("nightly", "", "specify a nightly to use. e.g. slotname,Tue")
 }
 
 func add_output_level(cmd *commander.Command) {
@@ -50,8 +53,9 @@ func add_platform(cmd *commander.Command) {
 
 	if plat == "" {
 		// auto-detect
-
+		plat = "x86_64-linux-gcc-opt"
 	}
+
 	cmd.Flag.String("c", plat, "runtime platform")
 }
 
