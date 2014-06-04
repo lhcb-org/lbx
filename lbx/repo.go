@@ -10,12 +10,12 @@ var Repos = RepoInfos{
 		{
 			Cmd:  vcs.Svn,
 			Repo: "svn+ssh://svn.cern.ch/reps/gaudi",
-			Root: "/gaudi",
+			Root: "/reps/gaudi",
 		},
 		{
 			Cmd:  vcs.Svn,
 			Repo: "http://svn.cern.ch/guest/gaudi",
-			Root: "/gaudi",
+			Root: "/guest/gaudi",
 		},
 	},
 
@@ -23,12 +23,12 @@ var Repos = RepoInfos{
 		{
 			Cmd:  vcs.Svn,
 			Repo: "svn+ssh://svn.cern.ch/reps/lhcb",
-			Root: "/lhcb",
+			Root: "/reps/lhcb",
 		},
 		{
 			Cmd:  vcs.Svn,
 			Repo: "http://svn.cern.ch/guest/lhcb",
-			Root: "/lhcb",
+			Root: "/guest/lhcb",
 		},
 	},
 
@@ -36,12 +36,12 @@ var Repos = RepoInfos{
 		{
 			Cmd:  vcs.Svn,
 			Repo: "svn+ssh://svn.cern.ch/reps/dirac",
-			Root: "/dirac",
+			Root: "/reps/dirac",
 		},
 		{
 			Cmd:  vcs.Svn,
 			Repo: "http://svn.cern.ch/guest/dirac",
-			Root: "/dirac",
+			Root: "/guest/dirac",
 		},
 	},
 
@@ -49,7 +49,7 @@ var Repos = RepoInfos{
 		{
 			Cmd:  vcs.Svn,
 			Repo: "svn+ssh://svn.cern.ch/reps/lhcbint",
-			Root: "/lhcbint",
+			Root: "/reps/lhcbint",
 		},
 	},
 }
