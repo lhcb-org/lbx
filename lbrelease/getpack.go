@@ -81,11 +81,11 @@ func (gp *GetPack) initPkgs() error {
 	gp.pkgs = make(map[string][]lbx.RepoInfo)
 
 	for _, repo := range gp.repos {
-		for _, p := range repo.ListPackages(gp.sel_hat) {
+		for _, p := range repo[0].ListPackages(gp.sel_hat) {
 			if _, ok := gp.pkgs[p]; !ok {
 				gp.pkgs[p] = make([]lbx.RepoInfo, 0, 1)
 			}
-			gp.pkgs[p] = append(gp.pkgs[p], repo)
+			gp.pkgs[p] = append(gp.pkgs[p], repo[0])
 		}
 	}
 	return err
