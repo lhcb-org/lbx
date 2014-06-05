@@ -49,13 +49,13 @@ func (p datapkgTypes) Len() int           { return len(p) }
 func (p datapkgTypes) Less(i, j int) bool { return p[i].Version < p[j].Version }
 func (p datapkgTypes) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
-// FindDataPackage finds a data package in the directories specified in paths,
+// FindDataPackage finds a data package among the Context.ProjectsPath,
 // using optionally the standard suffixes "DBASE", "PARAM" and "EXTRAPACKAGES".
-func FindDataPackage(paths []string, name, version string) (string, error) {
+func (ctx *Context) FindDataPackage(name, version string) (string, error) {
 	suffixes := []string{"", "EXTRAPACKAGES", "DBASE", "PARAM"}
 	versions := make([]datapkgType, 0, 1)
 
-	for _, path := range paths {
+	for _, path := range ctx.ProjectsPath {
 		for _, suffix := range suffixes {
 			p := filepath.Join(path, suffix, name)
 			if _, err := os.Stat(p); err != nil {
@@ -79,7 +79,7 @@ func FindDataPackage(paths []string, name, version string) (string, error) {
 
 	if len(versions) <= 0 {
 		return "", fmt.Errorf("lbx: could not find data package %[1]q %[2]q in %[3]v",
-			name, version, paths,
+			name, version, ctx.ProjectsPath,
 		)
 	}
 
