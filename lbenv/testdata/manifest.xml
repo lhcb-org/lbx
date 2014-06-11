@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<manifest>
+  <project name="DaVinci" version="v34r1" />
+  <heptools>
+    <version>68</version>
+    <binary_tag>x86_64-slc6-gcc48-opt</binary_tag>
+    <lcg_system>x86_64-slc6-gcc48</lcg_system>
+  </heptools>
+  <used_projects>
+    <project name="Analysis" version="v12r1" />
+    <project name="Stripping" version="v8r1" />
+    <project name="Lbcom" version="v15r1" />
+  </used_projects>
+  <used_data_pkgs>
+    <package name="AppConfig" version="v3r*" />
+    <package name="FieldMap" version="v5r*" />
+    <package name="ParamFiles" version="v8r*" />
+    <package name="TCK/HltTCK" version="*" />
+  </used_data_pkgs>
+</manifest>
