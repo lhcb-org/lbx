@@ -176,6 +176,15 @@ func (env *Environment) Get(name string) Var {
 	return v
 }
 
+// Keys returns the list of environment variables' names.
+func (env *Environment) Keys() []string {
+	keys := make([]string, 0, len(env.vars))
+	for k := range env.vars {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
 // Var is an environment variable.
 type Var struct {
 	Name  string
