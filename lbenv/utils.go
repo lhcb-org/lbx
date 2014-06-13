@@ -1,6 +1,7 @@
 package lbenv
 
 import (
+	"fmt"
 	"os"
 	"strings"
 )
@@ -27,4 +28,14 @@ func in_str_slice(value string, slice []string) bool {
 		}
 	}
 	return false
+}
+
+func str_actions(actions []Action) []string {
+	o := make([]string, 0, len(actions))
+	for _, action := range actions {
+		o = append(o, fmt.Sprintf(
+			"%[1]v (type=%[1]T)", action,
+		))
+	}
+	return o
 }

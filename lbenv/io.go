@@ -115,6 +115,38 @@ func Decode(r io.Reader) ([]Action, error) {
 				}
 				a.Value = string(vtok.(xml.CharData))
 
+			case "remove":
+				var a RemoveVar
+				action = &a
+				for _, attr := range tok.Attr {
+					switch attr.Name.Local {
+					case "variable":
+						a.Name = attr.Value
+					}
+				}
+				var vtok xml.Token
+				vtok, err = dec.Token()
+				if err != nil {
+					return nil, err
+				}
+				a.Value = string(vtok.(xml.CharData))
+
+			case "remove-regexp":
+				var a RemoveRegexp
+				action = &a
+				for _, attr := range tok.Attr {
+					switch attr.Name.Local {
+					case "variable":
+						a.Name = attr.Value
+					}
+				}
+				var vtok xml.Token
+				vtok, err = dec.Token()
+				if err != nil {
+					return nil, err
+				}
+				a.Value = string(vtok.(xml.CharData))
+
 			case "include":
 				var a Include
 				action = &a
@@ -191,13 +223,17 @@ func Encode(w io.Writer, actions []Action) error {
 				panic(fmt.Errorf("unknown variable type %[1]v (%[1]T)", v.Type, v.Type))
 			}
 			_, err = fmt.Fprintf(
-				w, "<env:declare local=%q type=%q variable=%q/>\n",
+				w, "<env:declare local=\"%v\" type=%q variable=%q/>\n",
 				v.Local, vtype, v.Name,
 			)
 		case *SetVar:
 			_, err = fmt.Fprintf(w, "<env:set variable=%q>%s</env:set>\n", v.Name, v.Value)
 		case *UnsetVar:
 			_, err = fmt.Fprintf(w, "<env:unset variable=%q/>\n", v.Name)
+		case *RemoveVar:
+			_, err = fmt.Fprintf(w, "<env:remove variable=%q>%s</env:remove>\n", v.Name, v.Value)
+		case *RemoveRegexp:
+			_, err = fmt.Fprintf(w, "<env:remove-regexp variable=%q>%s</env:remove>\n", v.Name, v.Value)
 		case *AppendVar:
 			_, err = fmt.Fprintf(w, "<env:append variable=%q>%s</env:append>\n",
 				v.Name, v.Value,
@@ -215,6 +251,6 @@ func Encode(w io.Writer, actions []Action) error {
 		}
 	}
 
-	_, err = fmt.Fprintf(w, `</env:config>`)
+	_, err = fmt.Fprintf(w, "</env:config>\n")
 	return err
 }

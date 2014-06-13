@@ -81,6 +81,16 @@ func (v *RemoveVar) Run(env *Environment) error {
 	return err
 }
 
+type RemoveRegexp struct {
+	Name  string
+	Value string
+}
+
+func (v *RemoveRegexp) Run(env *Environment) error {
+	var err error
+	return err
+}
+
 type Include struct {
 	File   string `xml:"include"`
 	Caller string
