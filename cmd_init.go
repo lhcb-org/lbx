@@ -12,7 +12,7 @@ import (
 	"github.com/gonuts/flag"
 	"github.com/gonuts/gas"
 	"github.com/gonuts/logger"
-	"github.com/lhcb-org/lbx/lbx"
+	"github.com/lhcb-org/lbx/lbctx"
 )
 
 func lbx_make_cmd_init() *commander.Command {
@@ -58,7 +58,7 @@ func lbx_run_cmd_init(cmd *commander.Command, args []string) error {
 		return fmt.Errorf("lbx-init: invalid number of arguments")
 	}
 
-	proj = lbx.FixProjectCase(proj)
+	proj = lbctx.FixProjectCase(proj)
 
 	dirname := cmd.Flag.Lookup("name").Value.Get().(string)
 	local_proj, local_vers := dirname, "HEAD"

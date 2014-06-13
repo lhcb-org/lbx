@@ -3,16 +3,16 @@ package lbrelease
 import (
 	"fmt"
 
-	"github.com/lhcb-org/lbx/lbx"
+	"github.com/lhcb-org/lbx/lbctx"
 )
 
 type GetPack struct {
 	ReqPkg     string // requested package
 	ReqPkgVers string
 
-	pkgs  map[string][]lbx.RepoInfo
+	pkgs  map[string][]lbctx.RepoInfo
 	projs []string
-	repos lbx.RepoInfos
+	repos lbctx.RepoInfos
 
 	sel_repo string // selected repository
 	sel_hat  string // selected repository hat
@@ -54,11 +54,11 @@ func (gp *GetPack) initRepos(excludes []string, user, protocol string) error {
 		excl[v] = struct{}{}
 	}
 
-	gp.repos = make(lbx.RepoInfos, 3)
+	gp.repos = make(lbctx.RepoInfos, 3)
 
 	// prepare repositories urls
 	// filter the requested protocols for the known repositories
-	for k, v := range lbx.Repositories(user, protocol) {
+	for k, v := range lbctx.Repositories(user, protocol) {
 		if _, dup := excl[k]; dup {
 			continue
 		}
@@ -78,12 +78,12 @@ func (gp *GetPack) initPkgs() error {
 		return err
 	}
 
-	gp.pkgs = make(map[string][]lbx.RepoInfo)
+	gp.pkgs = make(map[string][]lbctx.RepoInfo)
 
 	for _, repo := range gp.repos {
 		for _, p := range repo[0].ListPackages(gp.sel_hat) {
 			if _, ok := gp.pkgs[p]; !ok {
-				gp.pkgs[p] = make([]lbx.RepoInfo, 0, 1)
+				gp.pkgs[p] = make([]lbctx.RepoInfo, 0, 1)
 			}
 			gp.pkgs[p] = append(gp.pkgs[p], repo[0])
 		}

@@ -1,7 +1,7 @@
-package lbx
+package lbctx
 
 import (
-	"github.com/lhcb-org/lbx/lbx/vcs"
+	"github.com/lhcb-org/lbx/lbctx/vcs"
 )
 
 // Repos is the database of known repositories
