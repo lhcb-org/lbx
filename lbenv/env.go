@@ -369,6 +369,18 @@ func (env *Environment) GenScript(shell ShellType, w io.Writer) error {
 	return err
 }
 
+// Env returns the list of environment variables and their values in
+// the form expected by exec.Cmd.Env
+func (env *Environment) Env() []string {
+	keys := env.Keys()
+	o := make([]string, 0, len(keys))
+	for _, k := range keys {
+		v := env.Get(k)
+		o = append(o, k+`="`+v.Value+`"`)
+	}
+	return o
+}
+
 // locate locates a XML file by name in the internal search path
 func (env *Environment) locate(file, caller, hints string) (string, error) {
 	var err error
