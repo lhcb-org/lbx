@@ -36,6 +36,7 @@ type Environment struct {
 	stack          []Action
 	vars           map[string]Var
 	loaded         map[string]struct{} // set of XML env files already 'included'
+	dirstack       []string            // stack of files being processed
 }
 
 func New() *Environment {
@@ -53,7 +54,8 @@ func New() *Environment {
 				Local: true,
 			},
 		},
-		loaded: make(map[string]struct{}),
+		loaded:   make(map[string]struct{}),
+		dirstack: make([]string, 0),
 	}
 }
 
@@ -296,6 +298,17 @@ func (env *Environment) LoadXML(r io.Reader) error {
 	// guard against recursion
 	env.loaded[fname] = struct{}{}
 
+	dot := env.vars["."]
+	defer func() {
+		env.vars["."] = dot
+	}()
+	// push the previous value of ${.} onto the stack
+	env.dirstack = append(env.dirstack, dot.Value)
+	env.vars["."] = Var{
+		Name:  ".",
+		Type:  VarScalar,
+		Value: filepath.Dir(fname),
+	}
 	actions, err := Decode(r)
 	if err != nil {
 		if err != io.EOF {
