@@ -18,6 +18,7 @@ func init() {
 		Subcommands: []*commander.Command{
 			lbx_make_cmd_init(),
 			lbx_make_cmd_pkg(),
+			lbx_make_cmd_run(),
 			lbx_make_cmd_version(),
 			lbx_make_cmd_which(),
 		},
