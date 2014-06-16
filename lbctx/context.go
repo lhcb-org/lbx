@@ -7,14 +7,38 @@ import (
 	"strings"
 
 	"github.com/gonuts/logger"
+	"github.com/gonuts/toml"
 )
 
 type Context struct {
 	msg          *logger.Logger
+	Project      string
+	Version      string
+	Platform     string
 	ProjectsPath []string // default (project) search path
 }
 
+// loadContext loads a Context from .lbx/config.toml
+func loadContext() (*Context, error) {
+	pwd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+
+	var ctx Context
+	_, err = toml.DecodeFile(filepath.Join(pwd, ".lbx", "config.toml"), &ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &ctx, nil
+}
+
 func NewContext(name string) *Context {
+	ctx, err := loadContext()
+	if err == nil {
+		ctx.msg = logger.New(name)
+		return ctx
+	}
 
 	return &Context{
 		msg:          logger.New(name),

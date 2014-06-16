@@ -12,6 +12,7 @@ import (
 	"github.com/gonuts/flag"
 	"github.com/gonuts/gas"
 	"github.com/gonuts/logger"
+	"github.com/gonuts/toml"
 	"github.com/lhcb-org/lbx/lbctx"
 )
 
@@ -26,7 +27,6 @@ init initialize a local development project.
 ex:
  $ lbx init Gaudi
  $ lbx init Gaudi HEAD
- $ lbx init -name mydev Gaudi
 `,
 		Flag: *flag.NewFlagSet("lbx-init", flag.ExitOnError),
 	}
@@ -34,7 +34,6 @@ ex:
 	add_search_path(cmd)
 	add_platform(cmd)
 
-	cmd.Flag.String("name", "", "name of the local project (default: <project>Dev_<version>)")
 	return cmd
 }
 
@@ -60,7 +59,12 @@ func lbx_run_cmd_init(cmd *commander.Command, args []string) error {
 
 	proj = lbctx.FixProjectCase(proj)
 
-	dirname := cmd.Flag.Lookup("name").Value.Get().(string)
+	pwd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+
+	dirname := filepath.Base(pwd)
 	local_proj, local_vers := dirname, "HEAD"
 	if dirname == "" {
 		dirname = proj + "Dev_" + vers
@@ -68,17 +72,7 @@ func lbx_run_cmd_init(cmd *commander.Command, args []string) error {
 		local_vers = vers
 	}
 
-	usr_area := cmd.Flag.Lookup("user-area").Value.Get().(string)
-	if usr_area == "" {
-		g_ctx.Errorf("lbx-init: user area not defined (env.var. User_release_area or option -user-area)\n")
-		return fmt.Errorf("lbx-init: user-area not defined")
-	}
-	local_projdir := filepath.Join(usr_area, dirname)
-	if path_exists(local_projdir) {
-		g_ctx.Errorf("lbx-init: directory %q already exists\n", local_projdir)
-		return fmt.Errorf("lbx-init: invalid project dir")
-	}
-
+	local_projdir := pwd
 	platform := cmd.Flag.Lookup("c").Value.Get().(string)
 
 	if nightly := cmd.Flag.Lookup("nightly").Value.Get().(string); nightly != "" {
@@ -133,22 +127,6 @@ func lbx_run_cmd_init(cmd *commander.Command, args []string) error {
 	}
 
 	// create the local dev project
-	if !path_exists(usr_area) {
-		g_ctx.Debugf("creating user release area directory [%s]\n", usr_area)
-		err = os.MkdirAll(usr_area, 0755)
-		if err != nil {
-			g_ctx.Errorf("lbx-init: problem creating user release area directory: %v\n", err)
-			return err
-		}
-	}
-
-	g_ctx.Debugf("creating local dev directory [%s]\n", local_projdir)
-	err = os.MkdirAll(local_projdir, 0755)
-	if err != nil {
-		g_ctx.Errorf("lbx-init: problem creating local dev. directory: %v\n", err)
-		return err
-	}
-
 	templates_dir, err := gas.Abs("github.com/lhcb-org/lbx/templates")
 	if err != nil {
 		g_ctx.Errorf("lbx-init: problem locating templates: %v\n", err)
@@ -222,6 +200,23 @@ then
   > make install
 
 You can customize the configuration by editing the file "CMakeLists.txt"
-`, dirname, usr_area, local_projdir)
+`, dirname, pwd, local_projdir)
+
+	err = os.MkdirAll(".lbx", 0755)
+	if err != nil {
+		return err
+	}
+
+	conf, err := os.Create(".lbx/config.toml")
+	if err != nil {
+		return err
+	}
+	defer conf.Close()
+
+	g_ctx.Project = proj
+	g_ctx.Version = vers
+	g_ctx.Platform = platform
+
+	err = toml.NewEncoder(conf).Encode(g_ctx)
 	return err
 }
