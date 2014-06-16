@@ -42,6 +42,16 @@ func (v *SetVar) Run(env *Environment) error {
 	return err
 }
 
+type DefaultVar struct {
+	Name  string
+	Value string
+}
+
+func (v *DefaultVar) Run(env *Environment) error {
+	var err error
+	return err
+}
+
 type UnsetVar struct {
 	Name string
 }

@@ -57,6 +57,22 @@ func Decode(r io.Reader) ([]Action, error) {
 					}
 				}
 
+			case "default":
+				var a DefaultVar
+				action = &a
+				for _, attr := range tok.Attr {
+					switch attr.Name.Local {
+					case "variable":
+						a.Name = attr.Value
+					}
+				}
+				var vtok xml.Token
+				vtok, err = dec.Token()
+				if err != nil {
+					return nil, err
+				}
+				a.Value = string(vtok.(xml.CharData))
+
 			case "unset":
 				var a UnsetVar
 				action = &a
@@ -226,6 +242,8 @@ func Encode(w io.Writer, actions []Action) error {
 				w, "<env:declare local=\"%v\" type=%q variable=%q/>\n",
 				v.Local, vtype, v.Name,
 			)
+		case *DefaultVar:
+			_, err = fmt.Fprintf(w, "<env:default variable=%q>%s</env:set>\n", v.Name, v.Value)
 		case *SetVar:
 			_, err = fmt.Fprintf(w, "<env:set variable=%q>%s</env:set>\n", v.Name, v.Value)
 		case *UnsetVar:

@@ -408,6 +408,8 @@ func (env *Environment) load(action Action) error {
 	switch a := action.(type) {
 	case *DeclareVar:
 		err = env.Declare(a.Name, a.Type, a.Local)
+	case *DefaultVar:
+		err = env.Set(a.Name, a.Value)
 	case *AppendVar:
 		err = env.Append(a.Name, a.Value)
 	case *PrependVar:
