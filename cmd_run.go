@@ -168,7 +168,7 @@ func lbx_run_cmd_run(cmd *commander.Command, args []string) error {
 	}
 	// extend the prompt variable
 	ps1 := os.Getenv("PS1")
-	err = env.Set("PS1", fmt.Sprintf("[lbx] %s", ps1))
+	err = env.Set("PS1", fmt.Sprintf("[%s %s] %s", g_ctx.Project, g_ctx.Version, ps1))
 	if err != nil {
 		return err
 	}
