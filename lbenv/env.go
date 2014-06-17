@@ -376,7 +376,7 @@ func (env *Environment) Env() []string {
 	o := make([]string, 0, len(keys))
 	for _, k := range keys {
 		v := env.Get(k)
-		o = append(o, k+`="`+v.Value+`"`)
+		o = append(o, k+"="+v.Value)
 	}
 	return o
 }
