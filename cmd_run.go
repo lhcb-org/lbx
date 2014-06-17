@@ -112,6 +112,19 @@ func lbx_run_cmd_run(cmd *commander.Command, args []string) error {
 
 	env := lbenv.New()
 	env.SearchPath = xmlenvpath
+	env.LoadFromSystem = true
+
+	// load from environment
+	for _, val := range os.Environ() {
+		kv := strings.Split(val, "=")
+		k := kv[0]
+		v := os.Getenv(k)
+		err = env.Set(k, v)
+		if err != nil {
+			g_ctx.Errorf("lbx-run: problem initializing env.var %q: %v\n", k, err)
+			return err
+		}
+	}
 
 	// FIXME: handle the extra data packages
 
