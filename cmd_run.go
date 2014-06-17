@@ -108,7 +108,7 @@ func lbx_run_cmd_run(cmd *commander.Command, args []string) error {
 		}
 		xmlenvpath = append(xmlenvpath, paths...)
 	}
-	fmt.Printf("xml: %v\n", xmlenvpath)
+	//fmt.Printf("xml: %v\n", xmlenvpath)
 
 	env := lbenv.New()
 	env.SearchPath = xmlenvpath
@@ -179,7 +179,7 @@ func lbx_run_cmd_run(cmd *commander.Command, args []string) error {
 	bin.Stdout = os.Stdout
 	bin.Stderr = os.Stderr
 
-	fmt.Printf("sub-command: %v\n", bin.Args)
+	//fmt.Printf("sub-command: %v\n", bin.Args)
 	err = bin.Run()
 	return err
 }
