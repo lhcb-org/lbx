@@ -1,8 +1,6 @@
 package lbrelease
 
 import (
-	"bufio"
-	"bytes"
 	"fmt"
 	"os"
 	"strings"
@@ -13,6 +11,7 @@ import (
 )
 
 type GetPack struct {
+	Verbose    bool
 	ReqPkg     string // requested package
 	ReqPkgVers string
 
@@ -137,14 +136,16 @@ func (gp *GetPack) Run() error {
 		}
 	}
 
-	bout, err := vcs.Run(repo.Cmd, "checkout {url} ./{dir}", "url", strings.Join(url, "/"), "dir", pkg.Name)
+	cmd := vcs.Command(repo.Cmd, "checkout {url} ./{dir}", "url", strings.Join(url, "/"), "dir", pkg.Name)
+	if gp.Verbose {
+		cmd.Stdout = os.Stdout
+	}
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
 	if err != nil {
-		scan := bufio.NewScanner(bytes.NewReader(bout))
-		for scan.Scan() {
-			fmt.Fprintf(os.Stderr, "%s\n", scan.Text())
-		}
 		return err
 	}
+
 	return err
 }
 
