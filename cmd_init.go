@@ -124,16 +124,6 @@ func lbx_run_cmd_init(cmd *commander.Command, args []string) error {
 	use_cmake := path_exists(filepath.Join(projdir, proj+"Config.cmake"))
 	if !use_cmake {
 		g_ctx.Warnf("%s %s does NOT seem to be a CMake-based project\n", proj, vers)
-	} else {
-		// FIXME: temporary hack ?
-		// inject <projdir>/cmake inside the search-path
-		g_ctx.ProjectsPath = append(
-			g_ctx.ProjectsPath[:1],
-			append(
-				[]string{filepath.Join(projdir, "cmake")},
-				g_ctx.ProjectsPath[1:]...,
-			)...,
-		)
 	}
 
 	// create the local dev project
