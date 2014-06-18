@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -28,6 +29,19 @@ func Run(vcs *Cmd, cmd string, keyval ...string) ([]byte, error) {
 	const verbose = true
 	const dir = "."
 	return vcs.run1(dir, cmd, keyval, verbose)
+}
+
+func Command(vcs *Cmd, cmdline string, keyval ...string) *exec.Cmd {
+	m := make(map[string]string)
+	for i := 0; i < len(keyval); i += 2 {
+		m[keyval[i]] = keyval[i+1]
+	}
+	args := strings.Fields(cmdline)
+	for i, arg := range args {
+		args[i] = expand(m, arg)
+	}
+
+	return exec.Command(vcs.cmd, args...)
 }
 
 type Helper struct {
