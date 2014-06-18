@@ -1,18 +1,24 @@
 package lbrelease
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
+	"os"
+	"strings"
 
+	"github.com/gonuts/toml"
 	"github.com/lhcb-org/lbx/lbctx"
+	"github.com/lhcb-org/lbx/lbctx/vcs"
 )
 
 type GetPack struct {
 	ReqPkg     string // requested package
 	ReqPkgVers string
 
-	pkgs  map[string][]lbctx.RepoInfo
+	pkgs  lbctx.Packages
 	projs []string
-	repos lbctx.RepoInfos
+	repos lbctx.RepoDb
 
 	sel_repo string // selected repository
 	sel_hat  string // selected repository hat
@@ -34,13 +40,19 @@ func (gp *GetPack) setup() error {
 		return err
 	}
 
+	const fname = ".lbx/packages-db.toml"
+	if _, err := os.Stat(fname); err == nil {
+		return gp.loadPkgs(fname)
+	}
+
 	err = gp.initPkgs()
 	if err != nil {
 		return err
 	}
 
 	gp.init = true
-	return err
+
+	return gp.savePkgs(fname)
 }
 
 func (gp *GetPack) initRepos(excludes []string, user, protocol string) error {
@@ -54,7 +66,7 @@ func (gp *GetPack) initRepos(excludes []string, user, protocol string) error {
 		excl[v] = struct{}{}
 	}
 
-	gp.repos = make(lbctx.RepoInfos, 3)
+	gp.repos = make(lbctx.RepoDb, 3)
 
 	// prepare repositories urls
 	// filter the requested protocols for the known repositories
@@ -78,14 +90,20 @@ func (gp *GetPack) initPkgs() error {
 		return err
 	}
 
-	gp.pkgs = make(map[string][]lbctx.RepoInfo)
+	gp.pkgs = make(lbctx.Packages)
 
-	for _, repo := range gp.repos {
-		for _, p := range repo[0].ListPackages(gp.sel_hat) {
-			if _, ok := gp.pkgs[p]; !ok {
-				gp.pkgs[p] = make([]lbctx.RepoInfo, 0, 1)
-			}
-			gp.pkgs[p] = append(gp.pkgs[p], repo[0])
+	pkgs := make(chan []lbctx.Package, len(gp.repos))
+	for repo := range gp.repos {
+		go func(n string) {
+			repo := gp.repos[n]
+			pkgs <- repo.ListPackages(gp.sel_hat)
+		}(repo)
+	}
+
+	for _ = range gp.repos {
+		ps := <-pkgs
+		for _, pkg := range ps {
+			gp.pkgs[pkg.Name] = pkg
 		}
 	}
 	return err
@@ -98,5 +116,62 @@ func (gp *GetPack) Run() error {
 		return err
 	}
 
+	pkg, ok := gp.pkgs[gp.ReqPkg]
+	if !ok {
+		return fmt.Errorf("lbrelease: no such package [%s]", gp.ReqPkg)
+	}
+
+	var url []string
+	switch gp.ReqPkgVers {
+	case "", "head", "trunk":
+		url = []string{pkg.Repo, pkg.Project, "trunk", pkg.Name}
+	default:
+		url = []string{pkg.Repo, pkg.Project, "tags", pkg.Name, gp.ReqPkgVers}
+	}
+
+	var repo *lbctx.RepoInfo
+	for _, r := range gp.repos {
+		if r[0].Repo == pkg.Repo {
+			repo = &r[0]
+			break
+		}
+	}
+
+	bout, err := vcs.Run(repo.Cmd, "checkout {url} ./{dir}", "url", strings.Join(url, "/"), "dir", pkg.Name)
+	if err != nil {
+		scan := bufio.NewScanner(bytes.NewReader(bout))
+		for scan.Scan() {
+			fmt.Fprintf(os.Stderr, "%s\n", scan.Text())
+		}
+		return err
+	}
 	return err
+}
+
+func (gp *GetPack) loadPkgs(fname string) error {
+	ctx := struct {
+		Packages lbctx.Packages
+	}{}
+	_, err := toml.DecodeFile(fname, &ctx)
+	if err != nil {
+		return err
+	}
+	gp.pkgs = ctx.Packages
+	gp.init = true
+	return err
+}
+
+func (gp *GetPack) savePkgs(fname string) error {
+	ctx := struct {
+		Packages lbctx.Packages
+	}{
+		Packages: gp.pkgs,
+	}
+	f, err := os.Create(fname)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	return toml.NewEncoder(f).Encode(&ctx)
 }
