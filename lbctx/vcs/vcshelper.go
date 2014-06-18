@@ -24,6 +24,12 @@ func path_exists(name string) bool {
 	return false
 }
 
+func Run(vcs *Cmd, cmd string, keyval ...string) ([]byte, error) {
+	const verbose = true
+	const dir = "."
+	return vcs.run1(dir, cmd, keyval, verbose)
+}
+
 type Helper struct {
 	Uri     *url.URL
 	TmpDir  string
