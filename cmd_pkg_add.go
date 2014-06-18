@@ -23,7 +23,7 @@ ex:
 		Flag: *flag.NewFlagSet("lbx-pkg-co", flag.ExitOnError),
 	}
 	cmd.Flag.Bool("v", false, "enable verbose output")
-	cmd.Flag.Bool("go", false, "use the go version")
+	cmd.Flag.Bool("go", true, "use the go version")
 	return cmd
 }
 
@@ -47,9 +47,23 @@ func lbx_run_cmd_pkg_add(cmd *commander.Command, args []string) error {
 		return err
 	}
 
+	pkgname := ""
+	pkgvers := ""
+
+	switch len(args) {
+	case 1:
+		pkgname = args[0]
+		pkgvers = "head"
+	case 2:
+		pkgname = args[0]
+		pkgvers = args[1]
+	default:
+
+	}
+
 	gp := &lbrelease.GetPack{
-		ReqPkg:     args[0],
-		ReqPkgVers: args[1],
+		ReqPkg:     pkgname,
+		ReqPkgVers: pkgvers,
 	}
 
 	err = gp.Run()
