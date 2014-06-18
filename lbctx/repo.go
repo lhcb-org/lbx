@@ -1,55 +1,52 @@
 package lbctx
 
 import (
+	"bufio"
+	"bytes"
+	"strings"
+
 	"github.com/lhcb-org/lbx/lbctx/vcs"
 )
 
 // Repos is the database of known repositories
-var Repos = RepoInfos{
-	"gaudi": []RepoInfo{
+var Repos = RepoDb{
+	"gaudi": RepoInfos{
 		{
 			Cmd:  vcs.Svn,
 			Repo: "svn+ssh://svn.cern.ch/reps/gaudi",
-			Root: "/reps/gaudi",
 		},
 		{
 			Cmd:  vcs.Svn,
 			Repo: "http://svn.cern.ch/guest/gaudi",
-			Root: "/guest/gaudi",
 		},
 	},
 
-	"lbsvn": []RepoInfo{
+	"lbsvn": RepoInfos{
 		{
 			Cmd:  vcs.Svn,
 			Repo: "svn+ssh://svn.cern.ch/reps/lhcb",
-			Root: "/reps/lhcb",
 		},
 		{
 			Cmd:  vcs.Svn,
 			Repo: "http://svn.cern.ch/guest/lhcb",
-			Root: "/guest/lhcb",
 		},
 	},
 
-	"dirac": []RepoInfo{
+	"dirac": RepoInfos{
 		{
 			Cmd:  vcs.Svn,
 			Repo: "svn+ssh://svn.cern.ch/reps/dirac",
-			Root: "/reps/dirac",
 		},
 		{
 			Cmd:  vcs.Svn,
 			Repo: "http://svn.cern.ch/guest/dirac",
-			Root: "/guest/dirac",
 		},
 	},
 
-	"lhcbint": []RepoInfo{
+	"lhcbint": RepoInfos{
 		{
 			Cmd:  vcs.Svn,
 			Repo: "svn+ssh://svn.cern.ch/reps/lhcbint",
-			Root: "/reps/lhcbint",
 		},
 	},
 }
@@ -57,14 +54,16 @@ var Repos = RepoInfos{
 type RepoInfo struct {
 	Cmd  *vcs.Cmd
 	Repo string
-	Root string
+
+	pkgs Packages
 }
 
-type RepoInfos map[string][]RepoInfo
+type RepoInfos []RepoInfo
+type RepoDb map[string]RepoInfos
 
 // Repositories returns a map of named-repositories
-func Repositories(user, protocol string) RepoInfos {
-	repos := make(RepoInfos, len(Repos))
+func Repositories(user, protocol string) RepoDb {
+	repos := make(RepoDb, len(Repos))
 	for k := range Repos {
 		repos[k] = append([]RepoInfo{}, Repos[k]...)
 	}
@@ -74,7 +73,80 @@ func Repositories(user, protocol string) RepoInfos {
 	return repos
 }
 
-func (repo *RepoInfo) ListPackages(hat string) []string {
-	pkgs := make([]string, 0)
+func (repos *RepoInfos) ListPackages(hat string) []Package {
+	for _, repo := range *repos {
+		pkgs := repo.ListPackages(hat)
+		if pkgs != nil {
+			return pkgs
+		}
+	}
+	return nil
+}
+
+func (repo *RepoInfo) ListPackages(hat string) []Package {
+	if repo.pkgs == nil {
+		err := repo.initPkgs()
+		if err != nil {
+			return nil
+		}
+	}
+	pkgs := make([]Package, 0)
+	for _, pkg := range repo.pkgs {
+		if !strings.HasPrefix(pkg.Name, hat) {
+			continue
+		}
+		pkgs = append(pkgs, pkg)
+	}
 	return pkgs
+}
+
+func (repo *RepoInfo) initPkgs() error {
+	var err error
+
+	// FIXME: first check 'propget version' >= 2.0
+
+	// assume propget-version >= 2.0
+	bout, err := vcs.Run(repo.Cmd, "propget packages {repo}", "repo", repo.Repo)
+	if err != nil {
+		return nil
+	}
+
+	pkgs := make(Packages)
+	scan := bufio.NewScanner(bytes.NewReader(bout))
+	for scan.Scan() {
+		bline := bytes.Trim(scan.Bytes(), " \n")
+		if bytes.HasPrefix(bline, []byte("#")) {
+			continue
+		}
+		bline = bytes.Replace(bline, []byte("\t"), []byte(" "), -1)
+		tokens := make([]string, 0)
+		for _, tok := range strings.Split(string(bline), " ") {
+			tok = strings.Trim(tok, " \t\n")
+			if tok == "" {
+				continue
+			}
+			tokens = append(tokens, tok)
+		}
+
+		if len(tokens) <= 0 {
+			continue
+		}
+		project := ""
+		pkgname := tokens[0]
+		if len(tokens) > 1 {
+			project = tokens[1]
+		}
+		pkgs[pkgname] = Package{
+			Name:    pkgname,
+			Project: project,
+			Repo:    repo.Repo,
+		}
+	}
+	err = scan.Err()
+	if err != nil {
+		return err
+	}
+
+	repo.pkgs = pkgs
+	return err
 }
